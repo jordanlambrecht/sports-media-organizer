@@ -1,0 +1,58 @@
+Cam:
+  - CAM-Rip
+  - CAM
+  - HDCAM
+DVD-Rip:
+  - DVDRip
+  - DVDMux
+  - DVDR
+  - DVD-Full
+  - Full-Rip
+  - ISO rip
+  - lossless rip
+  - untouched rip
+  - DVD-5
+  - DVD-9
+VhsRip:
+  - VhsRip
+WEB-DL:
+  - WEBDL
+  - WEB DL
+  - WEB-DL
+  - WEB (Scene)
+WEBRip:
+  - WEBRip
+  - WEB Rip
+  - WEB-Rip
+BluRay:
+  - Blu-Ray
+  - BluRay
+  - BLURAY
+  - BDRip
+  - BRip
+  - BRRip
+  - BDR[13]
+  - BD25
+  - BD50
+  - BD66
+  - BD100
+  - BD5
+  - BD9
+  - BDMV
+  - BDISO
+  - COMPLETE.BLURAY
+WEBCap:
+  - WEB-Cap
+  - WEBCAP
+  - WEB Cap
+HDTV:
+  - DSR
+  - DSRip
+  - SATRip
+  - DTHRip
+  - DVBRip
+  - HDTV
+  - PDTV
+  - DTVRip
+  - TVRip
+  - HDTVRip

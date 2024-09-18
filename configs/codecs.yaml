@@ -1,0 +1,21 @@
+DivX:
+  - DivX
+  - DIVX
+Xvid:
+  - Xvid
+  - XviD
+x264:
+  - x264
+  - H.264
+  - AVC
+  - x.264
+  - h.264
+x265:
+  - x265
+  - x.265
+  - H.265
+  - H265
+  - HEVC
+AV1:
+  - AV1
+  - AOMedia Video 1

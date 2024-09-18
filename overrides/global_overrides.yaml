@@ -1,0 +1,26 @@
+# Global Overrides Configuration
+
+pre_run_filename_substitutions:
+  - original: "vs."
+    replace: "vs"
+  - original: "&"
+    replace: "and"
+  - original: ","
+    replace: ""
+  - original: "(c.)"
+    replace: ""
+  - original: "_"
+    replace: " "
+  - original: '\s+'
+    replace: " "
+  - original: "cd1"
+    replace: "part-01"
+    is_directory: false # Applies to files, not directories
+  - original: "cd2"
+    replace: "part-02"
+    is_directory: false
+
+pre_run_filter_out:
+  - match: "restored"
+  - match: "fz-"
+  - match: "supercards"

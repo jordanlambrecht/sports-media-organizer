@@ -1,0 +1,57 @@
+# Wrestling Overrides Configuration
+
+sport: wrestling
+
+league_aliases:
+  WWE:
+    - "WWF"
+    - "World Wrestling Entertainment"
+  NJPW:
+    - "New Japan Pro Wrestling"
+  AJPW:
+    - "All Japan Pro Wrestling"
+  NWA WCW:
+    - "WCW"
+    - "World Championship Wrestling"
+  ROH:
+    - "Ring of Honor"
+
+wildcard_matches:
+  - string_contains:
+      - "Clash Of The Champions"
+      - "clash"
+    set_attr:
+      league_name: "NWA WCW"
+      event_name: "Clash of the Champions"
+      single_season: true
+  - string_contains:
+      - "2013 WWF PPV and TV Specials Pack (Original PPV,"
+      - "WWF PPV"
+    set_attr:
+      league_name: "WWF PPV"
+  - string_contains: ["royal", "rumble"]
+    set_attr:
+      league_name: "WWE Royal Rumble"
+  - string_contains: ["mania"]
+    set_attr:
+      league_name: "WWE WrestleMania"
+  - string_contains:
+      - "restored-2021"
+    set_attr:
+      remove_from_filename: "restored-2021"
+  - string_contains:
+      - "AJPW"
+      - "All Japan Pro Wrestling"
+    set_attr:
+      league_name: "AJPW"
+  - string_contains:
+      - "VANiLLA"
+    set_attr:
+      release_group: "VANiLLA"
+
+pre_run_filter_out:
+  - "restored-2021" # Removes "restored-2021" from filenames
+  - "restored ch"
+  - "poop" # Removes "poop" from filenames
+  - "fz-"
+  - "and TV Specials Pack (Original PPV, PPV Pre-Shows, USA and NBC Broadcasts)"
