@@ -1,3 +1,4 @@
+# configs/overrides/global_overrides.yaml
 # Global Overrides Configuration
 
 pre_run_filename_substitutions:
@@ -22,5 +23,7 @@ pre_run_filename_substitutions:
 
 pre_run_filter_out:
   - match: "restored"
+  - match: "("
+  - match: ")"
   - match: "fz-"
   - match: "supercards"

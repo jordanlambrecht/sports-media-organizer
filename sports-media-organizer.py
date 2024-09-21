@@ -770,7 +770,9 @@ class SportsMediaOrganizer:
             "%d-%m-%Y",
             "%Y_%m_%d",
             "%d%m%Y",
-            "%y.%m.%d",  # 2-digit years (e.g., 87.04.22)
+            "%y.%m.%d",
+            "%d.%m.%y",
+            "%d-%m-%y",  # 2-digit years (e.g., 87.04.22)
         ]
 
         # Try parsing the date

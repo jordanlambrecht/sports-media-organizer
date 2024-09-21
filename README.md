@@ -6,9 +6,9 @@ It's highly recommended that you use sub-categories with your torrent downloader
 
 ## Naming Conventions
 
-**Folders:** /{[league_name]}/Season {[air_year]} or Season 01/
+**Folders:** root/[sport if toggled]/{[league_name]}/Season {[air_year]} or Season 01/
 
-**Files:** {[event_name]}-{[episode_title]}{-[part_number]}{.[air_year]}{.[air_month]}{.[air_day]}{.[codec]}{.[resolution]}{.[release_group]}.{[extension_name]}
+**Files:** {[league_name]}{.[air_year]}{.[air_month]}{.[air_day].}{[event_name]}-{[episode_title]}{-[part_number]}{.[codec]}{.[resolution]}{.[release_group]}.{[extension_name]}
 
 **Example Folder + Filename (No Event Name):** /root/WWE Raw/Season 2012/WWE.Hall-of-Fame-Induction-Ceremony-2012.04.02.x264.720p-VANiLLA.mp4
 
@@ -373,7 +373,70 @@ It's highly recommended that you use sub-categories with your torrent downloader
       └───────────────────────────┘             └─────────────────────────────────┘
 ```
 
+## Directory Structure
+
+```text
+└── 📁__pycache__
+└── 📁venv
+└── 📁logs
+    └── 📁log files
+        └── 2024-09-17_03-04-32.log
+    └── 📁job reports
+        └── dry_run_2024-09-17_03-04-32
+        └── job_report_2024-09-17_03-04-32
+└── 📁configs
+    └── 📁overrides
+        └── 📁sports
+            └── baseball.yaml
+            └── football.yaml
+            └── wrestling.yaml
+        └── .DS_Store
+        └── global_overrides.yaml
+    └── codecs.yaml
+    └── config.yaml
+    └── release-groups.yaml
+    └── release-types.yaml
+    └── resolutions.yaml
+└── 📁src
+    └── 📁metadata_extractor
+        └── __init__.py
+        └── base_extractor.py
+        └── codec_extractor.py
+        └── date_extractor.py
+        └── episode_part_extractor.py
+        └── episode_title_extractor.py
+        └── event_name_extractor.py
+        └── extension_extractor.py
+        └── fps_extractor.py
+        └── league_extractor.py
+        └── metadata_extractor.py
+        └── release_format_extractor.py
+        └── release_group_extractor.py
+        └── resolution_extractor.py
+        └── season_extractor.py
+        └── sport_extractor.py
+    └── __init__.py
+    └── config_manager.py
+    └── custom_logger.py
+    └── file_handler.py
+    └── helpers.py
+    └── job_report.py
+    └── main.py
+    └── prompter.py
+└── 📁tests
+    └── test_codec_extractor.py
+    └── test_date_extractor.py
+    └── test_episode_title_extractor.py
+    └── test_metadata_extractor.py
+    └── test_season_extractor.py
+└── requirements.txt
+└── README.md
+```
+
 ## To-Do
 
 - [ ] Add additional sports categories beyond wrestling.
 - [ ] Hunt down more poorly-named wrestling files to expand outlier matching
+- [ ] Create a simulation mode
+- [ ] Create an automation level (i.e full-auto, intervention-needed, manual-only)
+- [ ] KNOWN BUG: Logger is not respecting the console log level in the config

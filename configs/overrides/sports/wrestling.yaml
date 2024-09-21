@@ -1,11 +1,21 @@
+# configs/overrides/sports/wrestling.yaml
 # Wrestling Overrides Configuration
 
 sport: wrestling
 
-league_aliases:
-  WWE:
-    - "WWF"
+league:
+  WWE PPV:
+    - "WWE PPV"
+    - "WWE Pay Per View"
+  WWE RAW:
+    - "WWE RAW"
     - "World Wrestling Entertainment"
+  WWE Royal Rumble:
+    - "Royal Rumble"
+    - "WWE Royal Rumble"
+  WWE WrestleMania:
+    - "WWE WrestleMania"
+    - "WrestleMania"
   NJPW:
     - "New Japan Pro Wrestling"
   AJPW:
@@ -49,9 +59,17 @@ wildcard_matches:
     set_attr:
       release_group: "VANiLLA"
 
+pre_run_filename_substitutions:
+  - original: "WWF"
+    replace: "WWE"
+  - original: "Pay Per View"
+    replace: "PPV"
+  - original: "Pay-Per-View"
+    replace: "PPV"
+
 pre_run_filter_out:
-  - "restored-2021" # Removes "restored-2021" from filenames
+  - "restored-2021"
   - "restored ch"
-  - "poop" # Removes "poop" from filenames
+  - "poop"
   - "fz-"
   - "and TV Specials Pack (Original PPV, PPV Pre-Shows, USA and NBC Broadcasts)"

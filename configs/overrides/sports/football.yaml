@@ -1,0 +1,18 @@
+# configs/overrides/sports/football.yaml
+sport: football
+leagues:
+  NFL:
+    - nfl
+    - National Football League
+    - "Super Bowl"
+    - "NFL Playoffs"
+  CFL:
+    - cfl
+    - Canadian Football League
+    - "CFL Grey Cup"
+    - "CFL Playoffs"
+  AFL:
+    - afl
+    - Australian Football League
+    - "AFL Grand Final"
+    - "AFL Playoffs"

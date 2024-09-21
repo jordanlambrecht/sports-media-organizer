@@ -3,3 +3,5 @@ logging
 rich
 pyyaml
 questionary
+pytest
+ffmpeg-python

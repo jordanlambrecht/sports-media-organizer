@@ -1,0 +1,72 @@
+# configs/config.yaml
+
+# This is the primary config file.
+default_library_root: ./
+
+allowlist_extensions: true
+allowed_extensions:
+  - ".mp4"
+  - ".mkv"
+  - ".avi"
+  - ".mpg"
+  # Add more as needed
+block_extensions:
+  - ".mp3"
+  - ".nfo"
+  - ".DS_Store"
+  - ".txt"
+hardlink_or_move: "hardlink" # options: "hardlink", "move"
+include_metadata_in_filenames: true
+sort_by_sport: false # Create root folders named after sport category
+ask_for_sport_on_startup: true
+
+# Logging
+log_rotation: true
+max_log_size: 1024 # Log file max size in KB
+backup_count: 5 # Number of backup log files to keep
+console_log_level: "INFO"
+log_file_log_level: "DEBUG"
+
+report_directory: "reports"
+
+auto_add_release_groups: true # Set to false to disable auto-adding new release groups
+append_unknown_release_group: true # Set to true to append -UnKn0wn if no release group is found
+
+sort_by_sport_category: false # Set to true to place all content into a parent folder grouped by sport. For example, if false: root/WWE/season/etc, if true: root/wrestling/WWE/season/etc
+quarantine:
+  quarantine_enabled: True, # Option to enable/disable quarantining. If files have a low confidence, place them in a folder for manual assesment.
+  quarantine_threshold: 50, # Confidence threshold for quarantining
+  quarantine_policy: # If one of these slots is set to true, and it returns unknown, it will trigger the file to be quarantined
+    season_name: true
+    episode_title: true
+    codec: false
+    league_name: true
+    air_year: true
+    air_month: false
+    air_day: false
+    fps: false
+    extension: true
+    release_group: false
+    release_format: false
+
+confidence_threshold: .5
+confidence_weights:
+  league_name: 30
+  air_year: 15
+  air_month: 5
+  air_day: 1
+  season_name: 13
+  episode_title: 5
+  episode_part: 2
+  codec: 10
+  fps: 1
+  resolution: 3
+  release_format: 3
+  release_group: 2
+  extension_name: 4
+
+probes:
+  codec: true
+  fps: false
+
+add_unknown_release_group: true

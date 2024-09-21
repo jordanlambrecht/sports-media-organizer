@@ -1,0 +1,19 @@
+# configs/overrides/sports/baseball.yaml
+sport: baseball
+
+leagues:
+  MLB:
+    - mlb
+    - Major League Baseball
+    - "MLB World Series"
+    - "MLB Playoffs"
+  NPB:
+    - npb
+    - Nippon Professional Baseball
+    - "NPB Japan Series"
+    - "NPB Playoffs"
+  KBO:
+    - kbo
+    - Korea Baseball Organization
+    - "KBO League Finals"
+    - "KBO Playoffs"

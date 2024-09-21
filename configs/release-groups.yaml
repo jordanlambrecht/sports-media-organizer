@@ -1,0 +1,7 @@
+# configs/release-groups.yaml
+VANiLLA:
+  - "VANiLLA"
+XYZ:
+  - "XYZ"
+ABC:
+  - "ABC"
