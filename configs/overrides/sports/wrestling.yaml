@@ -1,7 +1,7 @@
 # configs/overrides/sports/wrestling.yaml
 # Wrestling Overrides Configuration
 
-sport: wrestling
+sport: Wrestling
 
 league:
   WWE PPV:

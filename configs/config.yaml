@@ -68,5 +68,4 @@ confidence_weights:
 probes:
   codec: true
   fps: false
-
-add_unknown_release_group: true
+# TODO: merge codecs groups types and resolutions into here

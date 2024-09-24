@@ -1,10 +1,11 @@
 # src/metadata_extractor/episode_title_extractor.py
 
 import re
-from pathlib import Path
-from typing import Dict, Any, Optional, Tuple
-from .base_extractor import BaseExtractor
-from src.custom_logger import log
+from typing import Tuple, Optional, Dict, Any
+from .base_extractor import BaseExtractor, ExtractionResult
+from ..media_slots import MediaSlots
+from ..file_info import FileInfo
+from ..custom_logger import log
 
 
 class EpisodeTitleExtractor(BaseExtractor):
@@ -12,6 +13,10 @@ class EpisodeTitleExtractor(BaseExtractor):
     Extracts the episode title from the filename using configuration-driven wildcard matches
     and internal regex patterns.
     """
+
+    @property
+    def slot_name(self) -> str:
+        return "episode_title"
 
     def __init__(self, sport_overrides: Dict[str, Any], config: Dict[str, Any]) -> None:
         """

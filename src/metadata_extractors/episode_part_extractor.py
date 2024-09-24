@@ -1,10 +1,11 @@
-# src/metadata_extractor/episode_part_extractor.py
+# src/metadata_extractors/episode_part_extractor.py
 
 import re
-from pathlib import Path
-from typing import Dict, Any
-from .base_extractor import BaseExtractor
-from src.custom_logger import log
+from typing import Tuple, Optional, Dict, Any
+from .base_extractor import BaseExtractor, ExtractionResult
+from ..media_slots import MediaSlots
+from ..file_info import FileInfo
+from ..custom_logger import log
 
 
 class EpisodePartExtractor(BaseExtractor):
@@ -12,16 +13,28 @@ class EpisodePartExtractor(BaseExtractor):
     Extracts episode part information from the filename.
     """
 
-    def extract(self, filename: str, file_path: Path) -> Dict[str, Any]:
+    @property
+    def slot_name(self) -> str:
+        return "episode_part"
+
+    def __init__(
+        self,
+        general_config: Dict[str, Any],
+        sport_config: Optional[Dict[str, Any]] = None,
+    ):
+        super().__init__(general_config, sport_config)
+
+    def extract(self, file_info: FileInfo, media_slots: MediaSlots) -> ExtractionResult:
         """
         Extracts the episode part from the filename.
 
         Args:
             filename (str): The name of the media file.
-            file_path (Path): The full path to the media file.
+            filepath (str): The full path to the media file.
+            media_slots (MediaSlots): The current state of extracted metadata.
 
         Returns:
-            Dict[str, Any]: Extracted episode part and confidence score.
+            Tuple[Optional[str], float]: Extracted episode part and confidence score.
         """
         confidence = 0
         episode_part = None
@@ -39,11 +52,8 @@ class EpisodePartExtractor(BaseExtractor):
                 episode_part = f"Part {part_number}"
                 confidence = 80
                 log.info(f"Episode part extracted: {episode_part}")
-                return {
-                    "episode_part": episode_part,
-                    "episode_part_confidence": confidence,
-                }
+                return episode_part, confidence
 
         # Fallback: No episode part found
         log.info(f"No episode part found for file: {filename}")
-        return {"episode_part": episode_part, "episode_part_confidence": confidence}
+        return None, 0

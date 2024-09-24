@@ -1,113 +1,168 @@
 # src/config_manager.py
 
-import yaml
+import os
 from pathlib import Path
-from typing import Any, Dict
-from custom_logger import log
-from functools import lru_cache
+from typing import Any, Dict, Optional
+
+import yaml
+from .custom_logger import log
 
 
 class ConfigManager:
     """
-    Manages loading and accessing configuration settings from YAML files.
+    Manages loading and accessing configuration files for the SportsMediaOrganizer.
     """
 
-    def __init__(
-        self,
-        config_path: str,
-        global_overrides_path: str = "configs/overrides/global_overrides.yaml",
-        sports_overrides_dir: str = "configs/overrides/sports/",
-    ) -> None:
+    def __init__(self, config_path: str = "configs/config.yaml") -> None:
         """
-        Initializes the ConfigManager by loading the main and override configurations.
+        Initializes the ConfigManager by loading global and sport-specific configurations.
 
         Args:
-            config_path (str): Path to the main configuration YAML file.
-            global_overrides_path (str): Path to the global overrides YAML file.
-            sports_overrides_dir (str): Directory path containing sport-specific override YAML files.
+            config_path (str): Path to the global configuration YAML file.
         """
-        self.config = self._load_config(config_path)
-        self.global_overrides_path = Path(global_overrides_path)
-        self.sports_overrides_dir = Path(sports_overrides_dir)
-        self._load_overrides()
+        self.general_config = self.load_yaml(config_path)
+        self.global_overrides = self.load_yaml(
+            "configs/overrides/global_overrides.yaml"
+        )
+        self.overrides_dir = Path("configs/overrides/sports")
+        self.sport_configs = {}
+        self.load_sport_configs()
 
-    def _load_config(self, path: str) -> Dict[str, Any]:
+    # TODO: load confidence thresholds from config into slot dataclass
+    # def set_confidence_thresholds(self,) -> None:
+
+    def load_yaml(self, path: str) -> Dict[str, Any]:
         """
-        Loads a YAML configuration file.
+        Loads a YAML file and returns its content as a dictionary.
 
         Args:
             path (str): Path to the YAML file.
 
         Returns:
-            Dict[str, Any]: Configuration dictionary.
+            Dict[str, Any]: Parsed YAML content.
         """
         try:
             with open(path, "r", encoding="utf-8") as file:
-                config = yaml.safe_load(file) or {}
-                log.debug(f"Loaded configuration from {path}")
-                return config
+                data = yaml.safe_load(file) or {}
+                log.debug(f"Loaded YAML configuration from {path}")
+                return data
+        except FileNotFoundError:
+            log.error(f"Configuration file not found: {path}")
+            return {}
+        except yaml.YAMLError as e:
+            log.error(f"Error parsing YAML file {path}: {e}")
+            return {}
         except Exception as e:
-            log.error(f"Failed to load configuration from {path}: {e}")
+            log.error(f"Unexpected error loading YAML file {path}: {e}")
             return {}
 
-    def _load_overrides(self) -> None:
+    def load_sport_configs(self) -> None:
         """
-        Loads global and sport-specific override configurations.
+        Loads all sport-specific configuration YAML files from the overrides/sports directory.
         """
-        # Load global overrides
-        if self.global_overrides_path.exists():
-            overrides = self._load_config(str(self.global_overrides_path))
-            self._deep_update(self.config, overrides)
-            log.debug("Applied global overrides.")
+        if not self.overrides_dir.exists():
+            log.warning(f"Overrides directory does not exist: {self.overrides_dir}")
+            return
 
-        # Load sport-specific overrides
-        if self.sports_overrides_dir.exists() and self.sports_overrides_dir.is_dir():
-            for override_file in self.sports_overrides_dir.glob("*.yaml"):
-                sport_overrides = self._load_config(str(override_file))
-                self._deep_update(self.config, sport_overrides)
-                log.debug(
-                    f"Applied sport-specific overrides from {override_file.name}."
-                )
+        for yaml_file in self.overrides_dir.glob("*.yaml"):
+            sport_name = yaml_file.stem.replace("_", " ").lower()
+            self.sport_configs[sport_name] = self.load_yaml(str(yaml_file))
+            log.debug(f"Loaded sport-specific configuration for '{sport_name}'")
 
-    def _deep_update(self, original: Dict[str, Any], updates: Dict[str, Any]) -> None:
+    def get_general(self, key: str, default: Optional[Any] = None) -> Any:
         """
-        Recursively updates a dictionary with another dictionary, handling lists as well.
+        Retrieves a value from the general configuration.
 
         Args:
-            original (Dict[str, Any]): Original dictionary.
-            updates (Dict[str, Any]): Dictionary with updates.
-        """
-        for key, value in updates.items():
-            if (
-                isinstance(value, dict)
-                and key in original
-                and isinstance(original[key], dict)
-            ):
-                self._deep_update(original[key], value)
-            elif isinstance(value, list) and isinstance(original.get(key), list):
-                original[key].extend(value)  # Append to lists
-            else:
-                original[key] = value
-
-    @lru_cache(maxsize=128)
-    def get(self, key: str, default: Any = None) -> Any:
-        """
-        Retrieves a value from the configuration using dot notation.
-
-        Args:
-            key (str): The key in dot notation (e.g., "metadata.confidence_weights").
-            default (Any): Default value if key is not found.
+            key (str): Configuration key in dot notation (e.g., "confidence_threshold").
+            default (Optional[Any]): Default value if the key is not found.
 
         Returns:
-            Any: The retrieved value or default.
+            Any: The configuration value or default.
+        """
+        return self._get_from_config(self.general_config, key, default)
+
+    def get_global_override(self, key: str, default: Optional[Any] = None) -> Any:
+        """
+        Retrieves a value from the global overrides.
+
+        Args:
+            key (str): Configuration key in dot notation.
+            default (Optional[Any]): Default value if the key is not found.
+
+        Returns:
+            Any: The configuration value or default.
+        """
+        return self._get_from_config(self.global_overrides, key, default)
+
+    def get_sport_specific(
+        self, sport: str, key: str, default: Optional[Any] = None
+    ) -> Any:
+        """
+        Retrieves a value from the sport-specific configuration.
+
+        Args:
+            sport (str): Name of the sport.
+            key (str): Configuration key in dot notation.
+            default (Optional[Any]): Default value if the key is not found.
+
+        Returns:
+            Any: The configuration value or default.
+        """
+        sport_config = self.get_sport_config(sport)
+        if sport_config is None:
+            return default
+        return self._get_from_config(sport_config, key, default)
+
+    def get_sport_config(self, sport: str) -> Optional[Dict[str, Any]]:
+        """
+        Retrieves the configuration for a specific sport.
+
+        Args:
+            sport (str): Name of the sport (case-insensitive).
+
+        Returns:
+            Optional[Dict[str, Any]]: Sport-specific configuration dictionary or None if not found.
+        """
+        sport = sport.lower()
+        config = self.sport_configs.get(sport)
+        if config:
+            log.debug(f"Retrieved sport configuration for '{sport}'")
+        else:
+            log.warning(f"No configuration found for sport '{sport}'")
+        return config
+
+    def _get_from_config(
+        self, config: Dict[str, Any], key: str, default: Optional[Any] = None
+    ) -> Any:
+        """
+        Helper method to retrieve a value from a config dictionary using dot notation.
         """
         keys = key.split(".")
-        value = self.config
-        for k in keys:
-            if isinstance(value, dict) and k in value:
+        value = config
+        try:
+            for k in keys:
                 value = value[k]
-            else:
-                log.debug(f"Key '{key}' not found. Returning default: {default}")
-                return default
-        log.debug(f"Retrieved key '{key}' with value: {value}")
-        return value
+            log.debug(f"Retrieved config '{key}': {value}")
+            return value
+        except (KeyError, TypeError):
+            log.warning(
+                f"Configuration key '{key}' not found. Using default: {default}"
+            )
+            return default
+
+    def get_all_configs(self, sport: str) -> Dict[str, Dict[str, Any]]:
+        """
+        Returns all configurations as separate dictionaries.
+
+        Args:
+            sport (str): Name of the sport.
+
+        Returns:
+            Dict[str, Dict[str, Any]]: Dictionary containing general, global overrides, and sport-specific configurations.
+        """
+        return {
+            "general": self.general_config,
+            "global_overrides": self.global_overrides,
+            "sport_config": self.get_sport_config(sport) or {},
+        }

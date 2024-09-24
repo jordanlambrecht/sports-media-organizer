@@ -1,16 +1,22 @@
 # src/metadata_extractor/event_extractor.py
 
+
 import re
-from pathlib import Path
 from typing import Tuple, Optional, Dict, Any
-from .base_extractor import BaseExtractor
-from src.custom_logger import log
+from .base_extractor import BaseExtractor, ExtractionResult
+from ..media_slots import MediaSlots
+from ..file_info import FileInfo
+from ..custom_logger import log
 
 
 class EventNameExtractor(BaseExtractor):
     """
     Extracts the event name from the filename using wildcard matches defined in configuration.
     """
+
+    @property
+    def slot_name(self) -> str:
+        return "event_name"
 
     def __init__(self, sport_overrides: Dict[str, Any], config: Dict[str, Any]) -> None:
         """

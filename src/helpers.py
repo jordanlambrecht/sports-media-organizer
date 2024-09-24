@@ -1,145 +1,196 @@
 # src/helpers.py
 
+"""
+Helpers Module
+--------------
+Contains utility functions and classes used throughout the SportsMediaOrganizer application.
+"""
+
 import re
-from typing import Optional, Dict, Any
-import yaml
+import os
 from pathlib import Path
+from typing import Any, Dict, Tuple
 from .custom_logger import log
 
 
-def load_yaml_config(file_path: Path) -> Dict[str, Any]:
+def normalize_string(text: str) -> str:
     """
-    Loads a YAML configuration file.
+    Normalizes the input string by replacing backslashes with forward slashes.
 
     Args:
-        file_path (Path): Path to the YAML file.
+        text (str): The input string.
 
     Returns:
-        Dict[str, Any]: Loaded YAML content.
+        str: The normalized string.
     """
-    try:
-        with file_path.open("r", encoding="utf-8") as f:
-            config = yaml.safe_load(f) or {}
-            log.debug(f"Loaded YAML configuration from {file_path}")
-            return config
-    except FileNotFoundError:
-        log.error(f"YAML file not found: {file_path}")
-        return {}
-    except yaml.YAMLError as e:
-        log.error(f"Error loading YAML file {file_path}: {e}")
-        return {}
+    normalized = text.replace("\\", "/")
+    log.debug(f"Normalized text: {normalized}")
+    return normalized
 
 
-def save_yaml_config(file_path: Path, data: Dict[str, Any]) -> None:
+def clean_text(text: str) -> str:
     """
-    Saves a dictionary to a YAML configuration file.
+    Cleans the input text by removing unnecessary spaces and characters.
 
     Args:
-        file_path (Path): Path to the YAML file.
-        data (Dict[str, Any]): Data to save.
-    """
-    try:
-        with file_path.open("w", encoding="utf-8") as f:
-            yaml.dump(data, f, sort_keys=False)
-        log.debug(f"Saved YAML configuration to {file_path}")
-    except Exception as e:
-        log.error(f"Failed to save YAML file {file_path}: {e}")
-
-
-def clean_text(text: Optional[str]) -> str:
-    """
-    Cleans and normalizes text by removing unwanted characters and formatting.
-
-    Args:
-        text (Optional[str]): The text to clean.
+        text (str): The input string.
 
     Returns:
-        str: The cleaned and normalized text.
+        str: The cleaned string.
     """
-    if not text:
-        return ""
-    # Remove non-alphanumeric characters except spaces and dashes
-    cleaned = re.sub(r"[^A-Za-z0-9 \-]+", "", text)
-    return cleaned.strip().lower()
+
+    # Remove multiple spaces
+    cleaned = re.sub(r"\s+", " ", text)
+    # Strip leading and trailing spaces
+    cleaned = cleaned.strip()
+    cleaned = cleaned.replace("..", ".")
+    # Remove spaces before or after periods and dashes
+    cleaned = re.sub(r"\s*\.\s*", ".", cleaned)
+    cleaned = re.sub(r"\s*-\s*", "-", cleaned)
+    log.debug(f"Cleaned text: {cleaned}")
+    return cleaned
 
 
-def ensure_directory(path: Path) -> bool:
+def preprocess_filename(filepath: str) -> Tuple[str, str]:
     """
-    Ensures that the specified directory exists. Creates it if it does not.
+    Splits the filepath into directory and filename after removing the drive.
 
     Args:
-        path (Path): The directory path to ensure.
+        filepath (str): The full path to the file.
 
     Returns:
-        bool: True if the directory exists or was created successfully, False otherwise.
+        Tuple[str, str]: A tuple containing the directory path and the filename.
     """
-    try:
-        path.mkdir(parents=True, exist_ok=True)
-        log.debug(f"Ensured directory exists: {path}")
-        return True
-    except Exception as e:
-        log.error(f"Failed to create directory {path}: {e}")
-        return False
+    # Remove the drive (e.g., 'C:\\') from the path
+    drive, path_without_drive = os.path.splitdrive(filepath)
+
+    # Split the path into directory and filename
+    directory, filename = os.path.split(path_without_drive)
+
+    return directory, filename
 
 
-def normalize_filename(filename: str) -> str:
+def apply_global_substitutions(text: str, config: Dict[str, Any]) -> str:
     """
-    Normalizes the filename by replacing spaces with underscores and removing special characters.
+    Applies global filename substitutions based on the configuration.
 
     Args:
-        filename (str): The filename to normalize.
+        text (str): The input text.
+        config (Dict[str, Any]): The global overrides configuration dictionary.
 
     Returns:
-        str: The normalized filename.
+        str: The text after applying global substitutions.
     """
-    # Replace spaces with underscores
-    filename = filename.replace(" ", "_")
-    # Remove special characters except underscores and dashes
-    filename = re.sub(r"[^\w\-_\.]", "", filename)
-    log.debug(f"Normalized filename: {filename}")
-    return filename
+    substitutions = config.get("pre_run_filename_substitutions", [])
+    for sub in substitutions:
+        original = sub.get("original", "")
+        replace = sub.get("replace", "")
+        is_directory = sub.get("is_directory", True)
+
+        if is_directory:
+            pattern = re.escape(original)
+            text = re.sub(pattern, replace, text, flags=re.IGNORECASE)
+            log.debug(f"Applied global substitution: '{original}' -> '{replace}'")
+        else:
+            # Check if the text represents a filename
+            _, file_extension = os.path.splitext(text)
+            if file_extension:
+                pattern = re.escape(original)
+                text = re.sub(pattern, replace, text, flags=re.IGNORECASE)
+                log.debug(
+                    f"Applied global file substitution: '{original}' -> '{replace}'"
+                )
+
+    text = clean_text(text)
+    return text
 
 
-def extract_date_from_string(text: str) -> Optional[str]:
+def apply_global_filters(text: str, config: Dict[str, Any]) -> str:
     """
-    Extracts a date in YYYY-MM-DD format from a string.
+    Applies global filters to exclude certain patterns from the text.
 
     Args:
-        text (str): The text to search for a date.
+        text (str): The input text.
+        config (Dict[str, Any]): The global overrides configuration dictionary.
 
     Returns:
-        Optional[str]: The extracted date string or None if not found.
+        str: The text after applying global filters.
     """
-    match = re.search(r"(\d{4})[-_](\d{2})[-_](\d{2})", text)
-    if match:
-        date = f"{match.group(1)}-{match.group(2)}-{match.group(3)}"
-        log.debug(f"Extracted date: {date} from text: {text}")
-        return date
-    log.debug(f"No date found in text: {text}")
-    return None
+    filters = config.get("pre_run_filter_out", [])
+    for filt in filters:
+        if isinstance(filt, dict) and "match" in filt:
+            pattern = re.escape(filt["match"])
+            text = re.sub(pattern, "", text, flags=re.IGNORECASE)
+            log.debug(f"Applied global filter: removing '{filt['match']}'")
+        elif isinstance(filt, str):
+            pattern = re.escape(filt)
+            text = re.sub(pattern, "", text, flags=re.IGNORECASE)
+            log.debug(f"Applied global filter: removing '{filt}'")
+    # Remove extra spaces after filtering
+    text = re.sub(r"\s+", " ", text).strip()
+    text = clean_text(text)
+    return text
 
 
-def is_file(path: Path) -> bool:
+def apply_sport_substitutions(text: str, sport_config: Dict[str, Any]) -> str:
     """
-    Checks if the given path is a file.
+    Applies sport-specific filename substitutions based on the configuration.
 
     Args:
-        path (Path): The path to check.
+        text (str): The input text.
+        sport_config (Dict[str, Any]): The sport-specific configuration dictionary.
 
     Returns:
-        bool: True if it's a file, False otherwise.
+        str: The text after applying sport-specific substitutions.
     """
-    return path.is_file()
+    substitutions = sport_config.get("pre_run_filename_substitutions", [])
+    for sub in substitutions:
+        original = sub.get("original", "")
+        replace = sub.get("replace", "")
+        is_directory = sub.get("is_directory", True)
+
+        if is_directory:
+            pattern = re.escape(original)
+            text = re.sub(pattern, replace, text, flags=re.IGNORECASE)
+            log.debug(
+                f"Applied sport-specific substitution: '{original}' -> '{replace}'"
+            )
+        else:
+            # Check if the text represents a filename
+            _, file_extension = os.path.splitext(text)
+            if file_extension:
+                pattern = re.escape(original)
+                text = re.sub(pattern, replace, text, flags=re.IGNORECASE)
+                log.debug(
+                    f"Applied sport-specific file substitution: '{original}' -> '{replace}'"
+                )
+
+    text = clean_text(text)
+    return text
 
 
-def is_directory(path: Path) -> bool:
+def apply_sport_filters(text: str, sport_config: Dict[str, Any]) -> str:
     """
-    Checks if the given path is a directory.
+    Applies sport-specific filters to exclude certain patterns from the text.
 
     Args:
-        path (Path): The path to check.
+        text (str): The input text.
+        sport_config (Dict[str, Any]): The sport-specific configuration dictionary.
 
     Returns:
-        bool: True if it's a directory, False otherwise.
+        str: The text after applying sport-specific filters.
     """
-    return path.is_dir()
+    filters = sport_config.get("pre_run_filter_out", [])
+    for filt in filters:
+        if isinstance(filt, dict) and "match" in filt:
+            pattern = re.escape(filt["match"])
+            text = re.sub(pattern, "", text, flags=re.IGNORECASE)
+            log.debug(f"Applied sport-specific filter: removing '{filt['match']}'")
+        elif isinstance(filt, str):
+            pattern = re.escape(filt)
+            text = re.sub(pattern, "", text, flags=re.IGNORECASE)
+            log.debug(f"Applied sport-specific filter: removing '{filt}'")
+    # Remove extra spaces after filtering
+    text = re.sub(r"\s+", " ", text).strip()
+    text = clean_text(text)
+    return text

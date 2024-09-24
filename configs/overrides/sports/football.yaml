@@ -1,5 +1,5 @@
 # configs/overrides/sports/football.yaml
-sport: football
+sport: Football
 leagues:
   NFL:
     - nfl

@@ -10,8 +10,9 @@ job reporting, user prompting, and metadata extraction.
 
 from .config_manager import ConfigManager
 from .custom_logger import log
-from .file_handler import FileHandler
-from .job_report import JobReport
+
+# from .file_handler import FileHandler
+# from .job_report import JobReport
 from .prompter import Prompter
 
 # from .metadata_extractor.metadata_extractor import MetadataExtractor
@@ -19,8 +20,8 @@ from .prompter import Prompter
 __all__ = [
     "ConfigManager",
     "log",
-    "FileHandler",
-    "JobReport",
+    # "FileHandler",
+    # "JobReport",
     "Prompter",
     # "MetadataExtractor",
 ]

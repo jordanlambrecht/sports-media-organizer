@@ -32,6 +32,24 @@ class Prompter:
     # User Confirmation Prompts
     # ======================
 
+    def select_mode(self) -> str:
+        """
+        Prompts the user to select the mode of operation.
+
+        Returns:
+            str: The selected mode ('Live', 'Dry Run', 'Simulation').
+        """
+        try:
+            mode = questionary.select(
+                "Select the mode of operation:",
+                choices=["Live", "Dry Run", "Simulation"],
+            ).ask()
+            log.debug(f"User selected mode: {mode}")
+            return mode
+        except Exception as e:
+            log.error(f"Error during mode selection prompt: {e}")
+            return "Simulation"  # Default to Simulation on error
+
     def _prompt_user_confirmation(self, message: str) -> bool:
         """
         Prompts the user for a yes/no confirmation.
@@ -79,7 +97,7 @@ class Prompter:
                     return current_value  # Or handle as needed
             else:
                 quarantine_threshold: int = (
-                    self.config.get("quarantine.quarantine_threshold", 50)
+                    self.config.get_general("quarantine.quarantine_threshold", 50)
                     if self.config
                     else 50
                 )
@@ -105,26 +123,6 @@ class Prompter:
         except Exception as e:
             log.error(f"Error during metadata slot prompt for '{slot_name}': {e}")
             return current_value
-
-    # ======================
-    # Display Help Information
-    # ======================
-
-    def display_help(self) -> None:
-        """
-        Displays help information to the user.
-        """
-        help_message = """
-        SportsMediaOrganizer Help:
-        --------------------------
-        - Organize your sports media files efficiently.
-        - Ensure that your configuration file is set up correctly.
-        - Follow the prompts to scan, organize, or quarantine your media files.
-        - Supported sports and media formats can be customized via YAML configuration files.
-        - Use the job report feature to review processing outcomes.
-        """
-        self.console.print(help_message)
-        log.info("Displayed help information to the user.")
 
     # ======================
     # Adding New Sport
@@ -201,6 +199,40 @@ class Prompter:
                 log.info(f"Successfully added new sport: {sport_name}")
             else:
                 log.error(f"Failed to add new sport: {sport_name}")
+
+    def prompt_simulation_input(self) -> Optional[str]:
+        """
+        Prompts the user to enter a filename or path for simulation.
+
+        Returns:
+            Optional[str]: The user input or None if cancelled.
+        """
+        try:
+            user_input = questionary.text(
+                "Enter the filename or path to simulate metadata extraction:"
+            ).ask()
+            log.debug(f"User input for simulation: {user_input}")
+            return user_input.strip() if user_input else None
+        except Exception as e:
+            log.error(f"Error during simulation input prompt: {e}")
+            return None
+
+    def prompt_continue_simulation(self) -> bool:
+        """
+        Prompts the user to decide whether to continue the simulation.
+
+        Returns:
+            bool: True if the user wants to continue, False otherwise.
+        """
+        try:
+            continue_sim = questionary.confirm(
+                "Do you want to process another file?"
+            ).ask()
+            log.debug(f"User chose to continue simulation: {continue_sim}")
+            return continue_sim
+        except Exception as e:
+            log.error(f"Error during continue simulation prompt: {e}")
+            return False
 
     def prompt_sport_selection(self) -> Optional[str]:
         """
@@ -377,12 +409,12 @@ class Prompter:
         """
         try:
             automation_level = (
-                self.config.get("automation_level", "prompt-on-low-score")
+                self.config.get_general("automation_level", "prompt-on-low-score")
                 if self.config
                 else "prompt-on-low-score"
             )
             quarantine_threshold = (
-                self.config.get("quarantine.quarantine_threshold", 50)
+                self.config.get_general("quarantine.quarantine_threshold", 50)
                 if self.config
                 else 50
             )
